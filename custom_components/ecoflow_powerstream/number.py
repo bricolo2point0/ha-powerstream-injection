@@ -5,7 +5,7 @@ from paho.mqtt import client as mqtt_client
 from homeassistant.components.number import NumberEntity
 from homeassistant.core import HomeAssistant
 from .const import DOMAIN
-import aiohttp  # Bibliothèque async pour HTTP
+import aiohttp  # Pour HTTP async
 
 LOG = logging.getLogger(__name__)
 
@@ -29,9 +29,9 @@ class PowerStreamInjectionEntity(NumberEntity):
         try:
             self._mqtt_data = await self.get_ecoflow_mqtt_data()
             self._client = self.connect_mqtt()
-            LOG.debug("Init entity OK")
+            LOG.debug("Init async entity OK")
         except Exception as e:
-            LOG.error("Erreur init entity: %s", e)
+            LOG.error("Erreur init async entity: %s", e)
 
     async def get_ecoflow_mqtt_data(self):
         try:
@@ -100,7 +100,6 @@ class PowerStreamInjectionEntity(NumberEntity):
 
         try:
             dynset = int(value) * 10
-            # Message et Protobuf (inchangé)
             muster_set_ac = {
                 "header": {
                     "pdata": {"value": dynset},
