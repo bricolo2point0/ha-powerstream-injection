@@ -16,7 +16,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 {
                     vol.Required("email"): str,
                     vol.Required("password"): str,
-                    vol.Required("serial_number"): str,  // Sans default
+                    vol.Required("serial_number"): str,
                 }
             ),
         )
