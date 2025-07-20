@@ -19,15 +19,17 @@ class PowerStreamInjectionEntity(NumberEntity):
         self._config = config
         self._attr_name = "PowerStream Injection"
         self._attr_native_min_value = 0
-        self._attr_native_max_value = 8000  # Max pour PowerStream
+        self._attr_native_max_value = 8000
         self._attr_native_step = 10
         self._state = 0
+        self._mqtt_data = None
+        self._client = None
         try:
             self._mqtt_data = self.get_ecoflow_mqtt_data()
             self._client = self.connect_mqtt()
-            LOG.debug("Init entity OK")
+            LOG.debug("Init entity OK avec MQTT data: %s", self._mqtt_data)
         except Exception as e:
-            LOG.error("Erreur init entity: %s", e)
+            LOG.error("Erreur init entity (auth ou connexion): %s", e)
 
     def get_ecoflow_mqtt_data(self):
         url = "https://api.ecoflow.com/auth/login"
@@ -68,9 +70,13 @@ class PowerStreamInjectionEntity(NumberEntity):
         return self._state
 
     def set_native_value(self, value):
+        if self._mqtt_data is None or self._client is None:
+            LOG.error("MQTT non initialisé - Vérifiez creds EcoFlow ou connexion")
+            return  # Ne rien faire si init a échoué
+
         try:
             dynset = int(value) * 10
-            # Préparez le message (adaptez si besoin pour Protobuf full)
+            # Préparez le message
             muster_set_ac = {
                 "header": {
                     "pdata": {"value": dynset},
@@ -91,7 +97,7 @@ class PowerStreamInjectionEntity(NumberEntity):
                 }
             }
 
-            # Encode en Protobuf (simplifié ; ajoutez votre proto si besoin)
+            # Encode en Protobuf (simplifié)
             from google.protobuf import struct_pb2 as struct
             proto_msg = struct.Struct()
             proto_msg.update(muster_set_ac)
