@@ -46,7 +46,7 @@ class PowerStreamInjectionEntity(NumberEntity):
             async with aiohttp.ClientSession() as session:
                 async with session.post(url, json=data) as response:
                     response.raise_for_status()
-                    resp_json = await response.json()  # Await json séparément
+                    resp_json = await response.json()
                     token = resp_json["data"]["token"]
                     userid = resp_json["data"]["user"]["userId"]
                     LOG.debug("Auth login OK, userid: %s", userid)
@@ -56,7 +56,7 @@ class PowerStreamInjectionEntity(NumberEntity):
             async with aiohttp.ClientSession() as session:
                 async with session.get(url_cert, headers=headers) as response:
                     response.raise_for_status()
-                    resp_json = await response.json()  # Await json séparément
+                    resp_json = await response.json()
                     cert_data = resp_json["data"]
                     LOG.debug("Auth cert OK: %s", cert_data)
                     return {
@@ -80,7 +80,10 @@ class PowerStreamInjectionEntity(NumberEntity):
     def connect_mqtt(self):
         try:
             LOG.debug("Connexion MQTT à %s:%s", self._mqtt_data["url"], self._mqtt_data["port"])
-            client = mqtt_client.Client(self._mqtt_data["client_id"])
+            client = mqtt_client.Client(
+                client_id=self._mqtt_data["client_id"],
+                callback_api_version=mqtt_client.CallbackAPIVersion.VERSION2  # Fix pour paho-mqtt v2.0+
+            )
             client.username_pw_set(self._mqtt_data["user"], self._mqtt_data["password"])
             client.connect(self._mqtt_data["url"], self._mqtt_data["port"], 60)
             client.loop_start()
