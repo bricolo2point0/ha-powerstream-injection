@@ -116,15 +116,7 @@ class PowerStreamInjectionEntity(NumberEntity):
                 }
             }
 
-            # Encode en Protobuf (simplifié ; ajustez si besoin pour votre proto full)
-            from google.protobuf import struct_pb2 as struct
-            proto_msg = struct.Struct()
-            proto_msg.update(muster_set_ac)
-            buffer = proto_msg.SerializeToString()
-
-            topic = f"/app/{self le flux de configuration n'a pas pu être chargé: 500 Internal Server Error Server got itself in trouble
-
-            # Encode en Protobuf (simplifié ; ajustez si besoin pour votre proto full)
+            # Encode en Protobuf (simplifié pour test ; ajustez si besoin)
             from google.protobuf import struct_pb2 as struct
             proto_msg = struct.Struct()
             proto_msg.update(muster_set_ac)
