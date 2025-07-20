@@ -1,0 +1,12 @@
+{
+  "domain": "ecoflow_powerstream",
+  "name": "EcoFlow PowerStream",
+  "version": "1.0.0",
+  "documentation": "https://github.com/bricolo2point0/ha-ecoflow-powerstream",
+  "issue_tracker": "https://github.com/bricolo2point0/ha-ecoflow-powerstream/issues",
+  "dependencies": ["mqtt"],
+  "requirements": ["protobuf>=4.25.0", "paho-mqtt>=1.6.0", "requests>=2.32.0"],
+  "codeowners": ["@bricolo2point0"],
+  "config_flow": true,
+  "iot_class": "cloud_polling"
+}
