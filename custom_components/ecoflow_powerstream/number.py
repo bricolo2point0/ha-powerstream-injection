@@ -46,7 +46,7 @@ class PowerStreamInjectionEntity(NumberEntity):
             async with aiohttp.ClientSession() as session:
                 async with session.post(url, json=data) as response:
                     response.raise_for_status()
-                    resp_json = await response.json()
+                    resp_json = await response.json()  # Await json séparément
                     token = resp_json["data"]["token"]
                     userid = resp_json["data"]["user"]["userId"]
                     LOG.debug("Auth login OK, userid: %s", userid)
@@ -56,7 +56,8 @@ class PowerStreamInjectionEntity(NumberEntity):
             async with aiohttp.ClientSession() as session:
                 async with session.get(url_cert, headers=headers) as response:
                     response.raise_for_status()
-                    cert_data = await response.json()["data"]
+                    resp_json = await response.json()  # Await json séparément
+                    cert_data = resp_json["data"]
                     LOG.debug("Auth cert OK: %s", cert_data)
                     return {
                         "url": cert_data["url"],
