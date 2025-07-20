@@ -27,43 +27,62 @@ class PowerStreamInjectionEntity(NumberEntity):
         try:
             self._mqtt_data = self.get_ecoflow_mqtt_data()
             self._client = self.connect_mqtt()
-            LOG.debug("Init entity OK avec MQTT data: %s", self._mqtt_data)
+            LOG.debug("Init entity OK")
         except Exception as e:
-            LOG.error("Erreur init entity (auth ou connexion): %s", e)
+            LOG.error("Erreur init entity: %s", e)
 
     def get_ecoflow_mqtt_data(self):
-        url = "https://api.ecoflow.com/auth/login"
-        data = {
-            "email": self._config["email"],
-            "password": base64.b64encode(self._config["password"].encode()).decode(),
-            "scene": "IOT_APP",
-            "userType": "ECOFLOW"
-        }
-        response = requests.post(url, json=data)
-        response.raise_for_status()
-        token = response.json()["data"]["token"]
-        userid = response.json()["data"]["user"]["userId"]
+        try:
+            LOG.debug("Début auth EcoFlow avec email: %s", self._config["email"])
+            url = "https://api.ecoflow.com/auth/login"
+            data = {
+                "email": self._config["email"],
+                "password": base64.b64encode(self._config["password"].encode()).decode(),
+                "scene": "IOT_APP",
+                "userType": "ECOFLOW"
+            }
+            response = requests.post(url, json=data)
+            response.raise_for_status()
+            token = response.json()["data"]["token"]
+            userid = response.json()["data"]["user"]["userId"]
+            LOG.debug("Auth login OK, userid: %s", userid)
 
-        url_cert = f"https://api.ecoflow.com/iot-auth/app/certification?userId={userid}"
-        headers = {"Authorization": f"Bearer {token}"}
-        response_cert = requests.get(url_cert, headers=headers)
-        response_cert.raise_for_status()
-        cert_data = response_cert.json()["data"]
-        return {
-            "url": cert_data["url"],
-            "port": int(cert_data["port"]),
-            "user": cert_data["certificateAccount"],
-            "password": cert_data["certificatePassword"],
-            "client_id": f"ANDROID_{int(time.time())}_{userid}",
-            "user_id": userid
-        }
+            url_cert = f"https://api.ecoflow.com/iot-auth/app/certification?userId={userid}"
+            headers = {"Authorization": f"Bearer {token}"}
+            response_cert = requests.get(url_cert, headers=headers)
+            response_cert.raise_for_status()
+            cert_data = response_cert.json()["data"]
+            LOG.debug("Auth cert OK: %s", cert_data)
+            return {
+                "url": cert_data["url"],
+                "port": int(cert_data["port"]),
+                "user": cert_data["certificateAccount"],
+                "password": cert_data["certificatePassword"],
+                "client_id": f"ANDROID_{int(time.time())}_{userid}",
+                "user_id": userid
+            }
+        except requests.exceptions.RequestException as e:
+            LOG.error("Erreur réseau/auth EcoFlow: %s", e)
+            raise
+        except KeyError as e:
+            LOG.error("Erreur réponse JSON EcoFlow: clé manquante %s", e)
+            raise
+        except Exception as e:
+            LOG.error("Erreur inattendue auth: %s", e)
+            raise
 
     def connect_mqtt(self):
-        client = mqtt_client.Client(self._mqtt_data["client_id"])
-        client.username_pw_set(self._mqtt_data["user"], self._mqtt_data["password"])
-        client.connect(self._mqtt_data["url"], self._mqtt_data["port"], 60)
-        client.loop_start()
-        return client
+        try:
+            LOG.debug("Connexion MQTT à %s:%s", self._mqtt_data["url"], self._mqtt_data["port"])
+            client = mqtt_client.Client(self._mqtt_data["client_id"])
+            client.username_pw_set(self._mqtt_data["user"], self._mqtt_data["password"])
+            client.connect(self._mqtt_data["url"], self._mqtt_data["port"], 60)
+            client.loop_start()
+            LOG.debug("Connexion MQTT OK")
+            return client
+        except Exception as e:
+            LOG.error("Erreur connexion MQTT: %s", e)
+            raise
 
     @property
     def native_value(self):
@@ -97,7 +116,15 @@ class PowerStreamInjectionEntity(NumberEntity):
                 }
             }
 
-            # Encode en Protobuf (simplifié)
+            # Encode en Protobuf (simplifié ; ajustez si besoin pour votre proto full)
+            from google.protobuf import struct_pb2 as struct
+            proto_msg = struct.Struct()
+            proto_msg.update(muster_set_ac)
+            buffer = proto_msg.SerializeToString()
+
+            topic = f"/app/{self le flux de configuration n'a pas pu être chargé: 500 Internal Server Error Server got itself in trouble
+
+            # Encode en Protobuf (simplifié ; ajustez si besoin pour votre proto full)
             from google.protobuf import struct_pb2 as struct
             proto_msg = struct.Struct()
             proto_msg.update(muster_set_ac)
